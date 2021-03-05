@@ -1,0 +1,11 @@
+<Project>
+    <PropertyGroup>
+
+        <LiCo>'$(MSBuildThisFileDirectory)../tools/LiCo.dll'</LiCo>
+        <LiCoOutput Condition="'$(LiCoOutput' == ''">ThirdPartyNotice.txt</LiCoOutput>
+    </PropertyGroup>
+
+    <Target Name="CreateThirdPartyNotice" BeforeTargets="Pack">
+        <Exec Command="dotnet $(LiCo) -o $(LiCoOutput) @(PackageReference -> '%(Identity)=%(Version)', ' ')" />
+    </Target>
+</Project>
