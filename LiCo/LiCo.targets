@@ -2,12 +2,12 @@
     <PropertyGroup>
         <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CreateThirdPartyNotice</TargetsForTfmSpecificBuildOutput>
 
-        <LiCo>'$(MSBuildThisFileDirectory)../tools/LiCo.dll'</LiCo>
+        <LiCo>$(MSBuildThisFileDirectory)../tools/LiCo.dll</LiCo>
         <LiCoOutput Condition="'$(LiCoOutput)' == ''">ThirdPartyNotice.txt</LiCoOutput>
     </PropertyGroup>
 
     <Target Name="CreateThirdPartyNotice" BeforeTargets="Pack">
-        <Exec Command="dotnet $(LiCo) -o $(LiCoOutput) @(PackageReference -> '%(Identity)=%(Version)', ' ')" />
+        <Exec Command="dotnet &quot;$(LiCo)&quot; -o $(LiCoOutput) @(PackageReference -> '%(Identity)=%(Version)', ' ')" />
         <ItemGroup>
             <TfmSpecificPackageFile Include="$(LiCoOutput)" PackagePath="" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest">
             </TfmSpecificPackageFile>
