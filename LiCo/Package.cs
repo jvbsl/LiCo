@@ -25,11 +25,19 @@ namespace LiCo
             Name = name;
             Version = version;
 
-            const string packagesPath = "/home/julian/.nuget/packages";
+            string path = null;
+            foreach (var packagesPath in Nuget.Paths)
+            {
+                string testPath = Path.Combine(packagesPath, Name, Version, $"{Name}.{Version}.nupkg");
+                if (File.Exists(testPath))
+                {
+                    path = testPath;
+                    break;
+                }
+            }
 
-            string path = Path.Combine(packagesPath, Name, Version, $"{Name}.{Version}.nupkg");
-            if (!File.Exists(path))
-                throw new FileNotFoundException($"Nuget package not found: {path}");
+            if (path == null)
+                throw new FileNotFoundException($"Nuget package not found: {Name}.{Version}.nupkg");
 
             using var fs = File.OpenRead(path);
             using var archive = new ZipArchive(fs, ZipArchiveMode.Read);

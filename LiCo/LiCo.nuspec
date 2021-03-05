@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>LiCo</id>
-        <version>0.1.4-alpha</version>
+        <version>0.1.5-alpha</version>
         <title>LiCo</title>
         <authors>jvbsl</authors>
         <license type="file">LICENSE.txt</license>
