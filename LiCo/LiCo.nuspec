@@ -5,7 +5,7 @@
         <version>0.1.0-alpha</version>
         <title>LiCo</title>
         <authors>jvbsl</authors>
-        <license type="file">tools/../LICENSE</license>
+        <license type="file">LICENSE.txt</license>
         <ProjectUrl>https://github.com/jvbsl/LiCo</ProjectUrl>
         <IsTool>true</IsTool>
         <description>Tool for collecting licenses of dependencies.</description>
@@ -13,7 +13,7 @@
     <files>
         <file src="../NOTICE" target="tools" />
         <file src="../NOTICE" target="NOTICE" />
-        <file src="../LICENS*" target="tools/.." />
+        <file src="../LICENSE.txt" target="LICENSE.txt" />
         <file src="bin\\$configuration$/net5.0/*.config" target="content" />
         
         <file src="LiCo.targets" target="build" />
