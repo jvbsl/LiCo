@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net;
 using System.Xml.Linq;
 
 namespace LiCo
@@ -37,7 +38,26 @@ namespace LiCo
             }
 
             if (path == null)
-                throw new FileNotFoundException($"Nuget package not found: {Name}.{Version}.nupkg");
+            {
+                foreach (var nugetSource in Nuget.Sources)
+                {
+                    var packageUri = Nuget.GetPackage(Name, Version, nugetSource);
+                    if (packageUri == null)
+                        continue;
+                    if (packageUri.IsFile)
+                    {
+                        path = packageUri.AbsolutePath;
+                        break;
+                    }
+
+                    path = Path.GetTempFileName();
+                    var wc = new WebClient();
+                    wc.DownloadFile(packageUri, path);
+                    break;
+                }
+                if (path == null)
+                    throw new FileNotFoundException($"Nuget package not found: {Name}.{Version}.nupkg");
+            }
 
             using var fs = File.OpenRead(path);
             using var archive = new ZipArchive(fs, ZipArchiveMode.Read);
