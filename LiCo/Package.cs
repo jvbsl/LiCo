@@ -10,6 +10,16 @@ namespace LiCo
     public class Package : IEquatable<Package>
     {
         private static HashSet<string> _ignoredPackages = new HashSet<string>() {"NETStandard.Library"};
+        private void AddThirdPartyIfExists(ZipArchive archive, string name)
+        {
+            var thirdParty = archive.GetEntry(name);
+            if (thirdParty != null)
+            {
+                using var thirdPartyStream = thirdParty.Open();
+                using var licenseReader = new StreamReader(thirdPartyStream);
+                Licenses.Add(License.GetLicense(LicenseType.ThirdPartyFile, licenseReader.ReadToEnd()));
+            }
+        }
         private Package(string name, string version)
         {
             Name = name;
@@ -38,13 +48,8 @@ namespace LiCo
             var license = metadata.Element(XName.Get("license", nmspace));
             var licenseUrl = metadata.Element(XName.Get("licenseUrl", nmspace))?.Value;
 
-            var thirdParty = archive.GetEntry("ThirdPartyNotices.txt");
-            if (thirdParty != null)
-            {
-                using var thirdPartyStream = thirdParty.Open();
-                using var licenseReader = new StreamReader(thirdPartyStream);
-                Licenses.Add(License.GetLicense(LicenseType.ThirdPartyFile, licenseReader.ReadToEnd()));
-            }
+            AddThirdPartyIfExists(archive, "ThirdPartyNotice.txt");
+            AddThirdPartyIfExists(archive, "NOTICE");
 
 
             if (!string.IsNullOrWhiteSpace(licenseUrl) && !licenseUrl.EndsWith("deprecateLicenseUrl"))
