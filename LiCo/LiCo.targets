@@ -7,7 +7,11 @@
     </PropertyGroup>
 
     <Target Name="CreateThirdPartyNotice" BeforeTargets="Pack">
-        <Exec Command="dotnet &quot;$(LiCo)&quot; -o $(LiCoOutput) @(PackageReference -> '%(Identity)=%(Version)', ' ')" />
+        <ItemGroup>
+            <FilteredPackages Include="@(PackageReference -> HasMetadata('PrivateAssets'))" Condition="'%(PackageReference.PrivateAssets)' != 'all'"/>
+            <FilteredPackages Include="@(PackageReference)" Exclude="@(PackageReference -> HasMetadata('PrivateAssets'))"/>
+        </ItemGroup>
+        <Exec Command="dotnet &quot;$(LiCo)&quot; -o $(LiCoOutput) @(FilteredPackages -> '%(Identity)=%(Version)', ' ')" />
         <ItemGroup>
             <TfmSpecificPackageFile Include="$(LiCoOutput)" PackagePath="" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest">
             </TfmSpecificPackageFile>
