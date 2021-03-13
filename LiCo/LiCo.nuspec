@@ -2,13 +2,14 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>LiCo</id>
-        <version>0.1.8-alpha</version>
+        <version>0.1.10-alpha</version>
         <title>LiCo</title>
         <authors>jvbsl</authors>
         <license type="file">LICENSE.txt</license>
         <ProjectUrl>https://github.com/jvbsl/LiCo</ProjectUrl>
         <IsTool>true</IsTool>
         <description>Tool for collecting licenses of dependencies.</description>
+        <developmentDependency>true</developmentDependency>
     </metadata>
     <files>
         <file src="../NOTICE" target="tools/" />

@@ -11,7 +11,7 @@
             <FilteredPackages Include="@(PackageReference -> HasMetadata('PrivateAssets'))" Condition="'%(PackageReference.PrivateAssets)' != 'all'"/>
             <FilteredPackages Include="@(PackageReference)" Exclude="@(PackageReference -> HasMetadata('PrivateAssets'))"/>
         </ItemGroup>
-        <Exec Command="dotnet &quot;$(LiCo)&quot; -o $(LiCoOutput) @(FilteredPackages -> '%(Identity)=%(Version)', ' ')" />
+        <Exec Command="dotnet &quot;$(LiCo)&quot; -o $(LiCoOutput) @(FilteredPackages -> '%(Identity)=%(Version)', ' ')" ContinueOnError="True" />
         <ItemGroup>
             <TfmSpecificPackageFile Include="$(LiCoOutput)" PackagePath="" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest">
             </TfmSpecificPackageFile>
