@@ -26,5 +26,5 @@ jobs:
         nuget-api-key: ${{secrets.NUGET_API_KEY}}
     - name: Publish packages
       if: github.event_name == 'push' && matrix.os == 'windows-latest'
-      run: nuget push ./output/*.nupkg -src https://api.nuget.org/v3/index.json
+      run: nuget push ./output/*.nupkg -src https://api.nuget.org/v3/index.json -SkipDuplicate
       shell: bash
