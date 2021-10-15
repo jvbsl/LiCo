@@ -2,7 +2,7 @@
     <PropertyGroup>
         <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CreateThirdPartyNotice</TargetsForTfmSpecificBuildOutput>
 
-        <LiCo>$(MSBuildThisFileDirectory)../tools/net5.0/any/LiCo.dll</LiCo>
+        <LiCo>$(MSBuildThisFileDirectory)../tools/LiCo.dll</LiCo>
         <LiCoOutput Condition="'$(LiCoOutput)' == ''">ThirdPartyNotice.txt</LiCoOutput>
     </PropertyGroup>
 
