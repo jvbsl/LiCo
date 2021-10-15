@@ -6,6 +6,11 @@
         <Version>0.1.0-alpha</Version>
 
 
+
+        <PackageDescription>Tool for collecting licenses of dependencies.</PackageDescription>
+        <DevelopmentDependency>true</DevelopmentDependency>
+        <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+
         <IncludeBuiltProjectOutputGroup>true</IncludeBuiltProjectOutputGroup>
         <NuspecFile>LiCo.nuspec</NuspecFile>
         <PackAsTool>true</PackAsTool>
@@ -13,8 +18,17 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="LitGit" Version="0.2.0.52-alpha" PrivateAssets="all" />
       <PackageReference Include="HtmlAgilityPack" Version="1.11.31" />
       <PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0-preview.1.21102.12" />
     </ItemGroup>
+    <Target Name="SetLitgitProps" BeforeTargets="BeforeBuild;PreBuildEvent;Pack" DependsOnTargets="BuildLitGitVersions">
+        <PropertyGroup>
+            <AssemblyVersion>$(LITGIT_VERSION_LONG)</AssemblyVersion>
+            <FileVersion>$(LITGIT_VERSION_LONG)</FileVersion>
+            <InformationalVersion>$(LITGIT_INFORMATIONAL_VERSION)</InformationalVersion>
 
+            <NuspecProperties>$(NuspecProperties);version=$(LITGIT_VERSION_FULL)</NuspecProperties>
+        </PropertyGroup>
+    </Target>
 </Project>

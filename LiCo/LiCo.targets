@@ -13,7 +13,7 @@
         </ItemGroup>
         <Exec Command="dotnet &quot;$(LiCo)&quot; -o $(LiCoOutput) @(FilteredPackages -> '%(Identity)=%(Version)', ' ')" ContinueOnError="True" Condition="'@(FilteredPackages)' != ''" />
         <ItemGroup>
-            <TfmSpecificPackageFile Include="$(LiCoOutput)" PackagePath="" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest">
+            <TfmSpecificPackageFile Include="$(LiCoOutput)" PackagePath="" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Condition="Exists('$(LiCoOutput)')">
             </TfmSpecificPackageFile>
         </ItemGroup>
     </Target>
