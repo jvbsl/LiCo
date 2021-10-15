@@ -4,6 +4,11 @@
         <OutputType>Exe</OutputType>
         <TargetFramework>net5.0</TargetFramework>
 
+
+        <PackageDescription>Tool for collecting licenses of dependencies.</PackageDescription>
+        <DevelopmentDependency>true</DevelopmentDependency>
+        <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+
         <IncludeBuiltProjectOutputGroup>true</IncludeBuiltProjectOutputGroup>
         <PackAsTool>true</PackAsTool>
         <LitGitVerboseOutput>true</LitGitVerboseOutput>
