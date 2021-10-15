@@ -24,7 +24,7 @@ namespace LiCo
             var p = Process.Start(s);
 
             List<Uri> sourcePaths = new List<Uri>();
-            if (p == null || !p.WaitForExit(1000))
+            if (p == null || !p.WaitForExit(10000))
                 return sourcePaths;
 
             string line = null;

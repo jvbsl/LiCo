@@ -4,14 +4,16 @@
 
         <LiCo>$(MSBuildThisFileDirectory)../tools/LiCo.dll</LiCo>
         <LiCoOutput Condition="'$(LiCoOutput)' == ''">ThirdPartyNotice.txt</LiCoOutput>
+        <LiCoTargetToUse Condition="'$(IsPackable)' == 'True'">Pack</LiCoTargetToUse>
+        <LiCoTargetToUse Condition="'$(IsPackable)' != 'True'">BeforeBuild</LiCoTargetToUse>
     </PropertyGroup>
 
-    <Target Name="CreateThirdPartyNotice" BeforeTargets="Pack">
+    <Target Name="CreateThirdPartyNotice" BeforeTargets="$(LiCoTargetToUse)">
         <ItemGroup>
             <FilteredPackages Include="@(PackageReference -> HasMetadata('PrivateAssets'))" Condition="'%(PackageReference.PrivateAssets)' != 'all'"/>
             <FilteredPackages Include="@(PackageReference)" Exclude="@(PackageReference -> HasMetadata('PrivateAssets'))"/>
         </ItemGroup>
-        <Exec Command="dotnet &quot;$(LiCo)&quot; -o $(LiCoOutput) @(FilteredPackages -> '%(Identity)=%(Version)', ' ')" ContinueOnError="True" Condition="'@(FilteredPackages)' != ''" />
+        <Exec Command="dotnet &quot;$(LiCo)&quot; @(LiCoAdditionalLicenses -> '-m %(Identity)') -o $(LiCoOutput) @(FilteredPackages -> '%(Identity)=%(Version)', ' ')" ContinueOnError="True" Condition="'@(FilteredPackages)' != ''" />
         <ItemGroup>
             <TfmSpecificPackageFile Include="$(LiCoOutput)" PackagePath="" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Condition="Exists('$(LiCoOutput)')">
             </TfmSpecificPackageFile>

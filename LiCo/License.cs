@@ -27,7 +27,7 @@ namespace LiCo
                 LicenseCache.Licenses.Add(key, l);
                 return l;
             }
-            catch (WebException)
+            catch (WebException e)
             {
                 Console.WriteLine($"warning: License not found at: {value}");
             }
@@ -38,7 +38,7 @@ namespace LiCo
         private string DownloadUrlAsText(Uri uri, Func<HtmlNode, HtmlNode> nodeSelector)
         {
             var wc = (HttpWebRequest) WebRequest.Create(uri);
-            wc.Accept = "plain/text";
+            wc.Accept = "text/plain";
 
             using var resp = wc.GetResponse() as HttpWebResponse;
             using var respStream = resp.GetResponseStream();

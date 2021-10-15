@@ -129,10 +129,53 @@ namespace LiCo
         
         public HashSet<Package> Dependencies { get; }
 
+        private struct VersionRangeItem
+        {
+            public VersionRangeItem(string version, bool inclusive)
+            {
+                Version = version;
+                Inclusive = inclusive;
+            }
+            public string Version { get; }
+            public bool Inclusive { get; }
+
+            public override string ToString()
+            {
+                return $"{(Inclusive ? "+" : "-")}{Version}";
+            }
+        }
+
+        private static (VersionRangeItem from, VersionRangeItem? to) ParseVersionRange(string version)
+        {
+            version = version.Trim();
+            var splt = version.Split(new char[] { ',' }, 2,
+                StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            if (splt.Length == 1)
+            {
+                return (new VersionRangeItem(version.ToLower(), true), null);
+            }
+
+            if (splt.Length != 2)
+                throw new FormatException("Not a valid version range format");
+
+            bool fromInclusive = splt[0].StartsWith('[');
+            bool fromExclusive = splt[0].StartsWith('(');
+            bool toInclusive = splt[1].EndsWith(']');
+            bool toExclusive = splt[1].EndsWith(')');
+            if (!fromExclusive && !fromInclusive)
+                throw new FormatException("Range needs to start with either '(' or '[' respectively.");
+            if (!toExclusive && !toInclusive)
+                throw new FormatException("Range needs to end with either ')' or ']' respectively.");
+
+            return (new VersionRangeItem(splt[0][1..].Trim().ToLower(), fromInclusive),
+                new VersionRangeItem(splt[1][..^1].Trim().ToLower(), toInclusive));
+        }
+        
         public static Package GetPackage(string name, string version)
         {
             name = name.ToLower();
-            version = version.ToLower();
+            var parsedVersion = ParseVersionRange(version);
+            version = parsedVersion.from.Version; // TODO: handle version ranges correctly
             var key = new PackageCache.PackageIdentifier(name, version);
             if (PackageCache.Packages.TryGetValue(key, out var package))
                 return package;
