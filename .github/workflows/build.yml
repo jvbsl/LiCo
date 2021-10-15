@@ -7,9 +7,6 @@ on:
       - develop
 jobs:
   build:
-    env:
-        NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-        
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -22,6 +19,12 @@ jobs:
       run: dotnet pack --configuration Release -o ./output/
     - name: Run tests
       run: echo "No tests yet!"
-    - name: Deploy Nuget Package
-      run: dotnet nuget push './output/*.nupkg' -k $NUGET_API_KEY -s "https://api.nuget.org/v3/index.json"
-      if: matrix.os == 'windows-latest' && github.event_name != 'pull_request'
+    - name: Setup NuGet.exe
+      if: github.event_name == 'push' && matrix.os == 'windows-latest'
+      uses: NuGet/setup-nuget@v1.0.5
+      with:
+        nuget-api-key: ${{secrets.NUGET_API_KEY}}
+    - name: Publish packages
+      if: github.event_name == 'push' && matrix.os == 'windows-latest'
+      run: nuget push ./output/*.nupkg -src https://api.nuget.org/v3/index.json
+      shell: bash
