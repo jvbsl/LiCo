@@ -21,11 +21,22 @@ namespace LiCo
                 Licenses.Add(License.GetLicense(LicenseType.ThirdPartyFile, licenseReader.ReadToEnd()));
             }
         }
-        private Package(string name, string version)
+        private Package(string name, string version, bool loadPackage)
         {
             Name = name;
             Version = version;
+            
+            Licenses = new HashSet<License>();
+            Dependencies = new HashSet<Package>();
 
+            if (loadPackage)
+                LoadPackage();
+        }
+
+        public void LoadPackage()
+        {
+            if (Licenses.Count != 0 || Dependencies.Count != 0)
+                return;
             string path = null;
             foreach (var packagesPath in Nuget.Paths)
             {
@@ -55,13 +66,15 @@ namespace LiCo
                     wc.DownloadFile(packageUri, path);
                     break;
                 }
+
                 if (path == null)
                     throw new FileNotFoundException($"Nuget package not found: {Name}.{Version}.nupkg");
             }
 
             using var fs = File.OpenRead(path);
             using var archive = new ZipArchive(fs, ZipArchiveMode.Read);
-            using var nuspecStream = archive.Entries.First(x => string.Compare(x.Name, $"{Name}.nuspec", StringComparison.InvariantCultureIgnoreCase) == 0).Open();
+            using var nuspecStream = archive.Entries
+                .First(x => string.Compare(x.Name, $"{Name}.nuspec", StringComparison.InvariantCultureIgnoreCase) == 0).Open();
 
             var doc = XDocument.Load(nuspecStream, LoadOptions.None);
             if (doc.Root == null)
@@ -70,9 +83,8 @@ namespace LiCo
             var metadata = doc.Root.Element(XName.Get("metadata", nmspace));
             if (metadata == null)
                 throw new InvalidOperationException();
-            
-            
-            Licenses = new HashSet<License>();
+
+
             var license = metadata.Element(XName.Get("license", nmspace));
             var licenseUrl = metadata.Element(XName.Get("licenseUrl", nmspace))?.Value;
 
@@ -86,13 +98,14 @@ namespace LiCo
                 if (lic != null)
                     Licenses.Add(lic);
             }
-            
+
             if (license != null)
             {
                 var tp = license.Attribute(XName.Get("type", string.Empty));
                 if (tp?.Value == "file")
                 {
-                    using var licenseStream = archive.GetEntry(license.Value)?.Open() ?? throw new FileNotFoundException("License file not found");
+                    using var licenseStream = archive.GetEntry(license.Value)?.Open() ??
+                                              throw new FileNotFoundException("License file not found");
                     using var licenseReader = new StreamReader(licenseStream);
                     Licenses.Add(License.GetLicense(LicenseType.File, licenseReader.ReadToEnd()));
                 }
@@ -101,9 +114,8 @@ namespace LiCo
                     Licenses.Add(License.GetLicense(LicenseType.Expression, license.Value));
                 }
             }
-            
-            Dependencies = new HashSet<Package>();
-            
+
+
             var depGroups = metadata.Element(XName.Get("dependencies", nmspace));
 
             if (depGroups == null)
@@ -120,11 +132,16 @@ namespace LiCo
                     if (string.IsNullOrWhiteSpace(depName) || string.IsNullOrWhiteSpace(depVersion))
                         continue;
 
-                    Dependencies.Add(Package.GetPackage(depName, depVersion));
+                    Dependencies.Add(Package.GetPackage(depName, depVersion, true));
                 }
             }
         }
-        
+
+        public override string ToString()
+        {
+            return $"{Name}={Version}";
+        }
+
         public HashSet<License> Licenses { get; }
         
         public HashSet<Package> Dependencies { get; }
@@ -171,7 +188,7 @@ namespace LiCo
                 new VersionRangeItem(splt[1][..^1].Trim().ToLower(), toInclusive));
         }
         
-        public static Package GetPackage(string name, string version)
+        public static Package GetPackage(string name, string version, bool loadPackage)
         {
             name = name.ToLower();
             var parsedVersion = ParseVersionRange(version);
@@ -179,7 +196,7 @@ namespace LiCo
             var key = new PackageCache.PackageIdentifier(name, version);
             if (PackageCache.Packages.TryGetValue(key, out var package))
                 return package;
-            var p = new Package(name, version);
+            var p = new Package(name, version, loadPackage);
             PackageCache.Packages.Add(key, p);
             return p;
         }

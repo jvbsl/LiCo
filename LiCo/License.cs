@@ -19,13 +19,12 @@ namespace LiCo
         public static License GetLicense(LicenseType type, string value)
         {
             var key = new LicenseCache.LicenseIdentifier(type, value);
-            if (LicenseCache.Licenses.TryGetValue(key, out var package))
+            if (LicenseCache.TryGetValue(key, out var package))
                 return package;
             try
             {
                 var l = new License(type, value);
-                LicenseCache.Licenses.Add(key, l);
-                return l;
+                return LicenseCache.TryAdd(key, l);
             }
             catch (WebException e)
             {
@@ -56,14 +55,19 @@ namespace LiCo
                     hd.Load(buffer, Encoding.GetEncoding(resp.CharacterSet));
                 else
                     hd.Load(buffer);
-                return HtmlToText.ConvertNode(nodeSelector(hd.DocumentNode));
+                return NormalizeLicenseText(HtmlToText.ConvertNode(nodeSelector(hd.DocumentNode)));
             }
             else
             {
                 var enc = (resp.CharacterSet != null ? Encoding.GetEncoding(resp.CharacterSet) : Encoding.UTF8);
                 using var reader = new StreamReader(respStream, enc);
-                return reader.ReadToEnd();
+                return NormalizeLicenseText(reader.ReadToEnd());
             }
+        }
+
+        private static string NormalizeLicenseText(string value)
+        {
+            return value.Replace("\r", "");
         }
 
         private License(LicenseType type, string value)
@@ -74,7 +78,7 @@ namespace LiCo
             {
                 case LicenseType.ThirdPartyFile:
                 case LicenseType.File:
-                    LicenseText = value;
+                    LicenseText = NormalizeLicenseText(value);
                     break;
                 case LicenseType.Url:
                 {
@@ -126,7 +130,7 @@ namespace LiCo
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return LicenseType == other.LicenseType && LicenseValue == other.LicenseValue;
+            return LicenseType == other.LicenseType && LicenseValue == other.LicenseValue || LicenseText == other.LicenseText;
         }
 
         public override bool Equals(object obj)
@@ -139,7 +143,7 @@ namespace LiCo
 
         public override int GetHashCode()
         {
-            return HashCode.Combine((int) LicenseType, LicenseValue);
+            return LicenseText.GetHashCode();
         }
     }
 }
