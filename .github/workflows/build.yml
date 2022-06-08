@@ -27,8 +27,14 @@ jobs:
         nuget-api-key: ${{secrets.NUGET_API_KEY}}
     - uses: actions/upload-artifact@v3
       with:
-        name: nuget
+        name: nuget-win
         path: ./output/
+      if: github.event_name == 'push' && matrix.os == 'windows-latest'
+    - uses: actions/upload-artifact@v3
+      with:
+        name: nuget-lnx
+        path: ./output/
+      if: github.event_name == 'push' && matrix.os == 'ubuntu-latest'
 #    - name: Publish packages
 #      if: github.event_name == 'push' && matrix.os == 'windows-latest'
 #      run: nuget push ./output/*.nupkg -src https://api.nuget.org/v3/index.json -SkipDuplicate
