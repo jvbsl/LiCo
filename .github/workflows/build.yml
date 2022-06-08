@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - develop
+      - test/package-creation
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -24,7 +25,11 @@ jobs:
       uses: NuGet/setup-nuget@v1.0.5
       with:
         nuget-api-key: ${{secrets.NUGET_API_KEY}}
-    - name: Publish packages
-      if: github.event_name == 'push' && matrix.os == 'windows-latest'
-      run: nuget push ./output/*.nupkg -src https://api.nuget.org/v3/index.json -SkipDuplicate
-      shell: bash
+    - uses: actions/upload-artifact@v3
+      with:
+        name: nuget
+        path: ./output/
+#    - name: Publish packages
+#      if: github.event_name == 'push' && matrix.os == 'windows-latest'
+#      run: nuget push ./output/*.nupkg -src https://api.nuget.org/v3/index.json -SkipDuplicate
+#      shell: bash
