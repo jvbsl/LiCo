@@ -116,7 +116,10 @@ namespace LiCo
             WriteThirdPartyNotice(collectedLicenses, thirdPartyNotice);
         }
 
-        private static readonly Regex BoxRegex = new Regex($"={{{BoxLength}}}", RegexOptions.Compiled);
+        private static readonly Regex BoxRegex = new Regex($"={{{BoxLength}}}\\s*\n(?<content>.*?)={{{BoxLength}}}", RegexOptions.Compiled | RegexOptions.Singleline);
+
+        private static readonly Regex DepPackageRegex =
+            new Regex("=+ Dependent packages (?<name>\\S*) (?<version>\\S*?) (?<thirdParty>ThirdPartyInfo|) =+\\s*\n", RegexOptions.Compiled);
         private static void CollectMergeFiles(List<string> mergeFiles, Dictionary<License, HashSet<Package>> collectedLicenses, HashSet<Package> alreadyNoticedPackages)
         {
             foreach (var f in mergeFiles)
@@ -128,21 +131,22 @@ namespace LiCo
         private static void CollectMergeFile(string mergeFile, Dictionary<License, HashSet<Package>> collectedLicenses,
             HashSet<Package> alreadyNoticedPackages)
         {
-            var splt = BoxRegex.Split(File.ReadAllText(mergeFile).Replace("\r", ""));
+            var fl = File.ReadAllText(mergeFile).Replace("\r", "");
 
-            for (int i = 1; i < splt.Length - 1; i += 2)
+            var matches = BoxRegex.Matches(fl).
+                Select(x => (match: x, packages: DepPackageRegex.Matches(x.Groups["content"].Value).ToArray())).
+                Where(x => x.packages.Length > 0).ToArray();
+
+            for (int i = 0; i < matches.Length; i++)
             {
-                var pkgs = splt[i].Split('\n', StringSplitOptions.RemoveEmptyEntries)
-                    .Select(x => x.Trim('=')[" Dependent packages ".Length..].TrimEnd(' ').Split(' ')).ToArray();
-                if (pkgs.Length == 0)
-                    continue;
-                if (pkgs[0].Length > 2 && pkgs[0][2] == "ThirdPartyInfo")
-                    continue;
-                var license = splt[i + 1][2..^2];
-                var l = License.GetLicense(LicenseType.File, license);
+                var (match, pkgs) = matches[i];
+                var start = match.Index + match.Length;
+                int end = i < matches.Length - 1 ? matches[i + 1].match.Index : fl.Length;
+                var license = fl[(start + 2)..(end - 2)];
+                var l = License.GetLicense(pkgs.Length == 1 && pkgs[0].Groups["thirdParty"].Value == "ThirdPartyInfo" ? LicenseType.ThirdPartyFile : LicenseType.File, license);
                 foreach (var p in pkgs)
                 {
-                    var package = Package.GetPackage(p[0], p[1], false);
+                    var package = Package.GetPackage(p.Groups["name"].Value, p.Groups["version"].Value, false);
                     // if (alreadyNoticedPackages.Contains(package))
                     //     continue;
                     alreadyNoticedPackages.Add(package);
@@ -151,9 +155,10 @@ namespace LiCo
                         packagesMatching = new();
                         collectedLicenses.Add(l, packagesMatching);
                     }
-
+                    
                     packagesMatching.Add(package);
                 }
+                
             }
         }
 
