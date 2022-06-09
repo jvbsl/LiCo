@@ -12,17 +12,17 @@
         <developmentDependency>true</developmentDependency>
     </metadata>
     <files>
-        <file src="../NOTICE" target="tools/" />
-        <file src="../NOTICE" target="NOTICE" />
-        <file src="../LICENSE.txt" target="LICENSE.txt" />
-        <file src="bin/$configuration$/net5.0/*.config" target="content/" />
+        <file src="..\NOTICE" target="tools/" />
+        <file src="..\NOTICE" target="NOTICE" />
+        <file src="..\LICENSE.txt" target="LICENSE.txt" />
+        <file src="bin\$configuration$\net5.0\*.config" target="content/" />
         
         <file src="LiCo.targets" target="build" />
         
-        <file src="bin/$configuration$/$framework$/publish/runtimes/win/**" target="tools/runtimes/win/" />
-        <file src="bin/$configuration$/$framework$/publish/*.dll" target="tools/" />
-        <file src="bin/$configuration$/$framework$/publish/*.json" target="tools/" />
-        <file src="bin/$configuration$/$framework$/publish/*.exe" target="tools/" />
-        <file src="bin/$configuration$/$framework$/publish/*.config" target="tools/" />
+        <file src="bin\$configuration$\$framework$\publish\runtimes\win\**" target="tools/runtimes/win/" />
+        <file src="bin\$configuration$\$framework$\publish\*.dll" target="tools/" />
+        <file src="bin\$configuration$\$framework$\publish\*.json" target="tools/" />
+        <file src="bin\$configuration$\$framework$\publish\*.exe" target="tools/" />
+        <file src="bin\$configuration$\$framework$\publish\*.config" target="tools/" />
     </files>
 </package>
