@@ -30,7 +30,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="LiCo.targets" PackagePath="build" />
+        <None Include="LiCo.targets" Pack="true" PackagePath="build" />
         <None Include="../LICENSE.txt" Pack="true" PackagePath="LICENSE.txt" />
 
         <None Include="$(PkgHtmlAgilityPack)/lib/netstandard2.0/*.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
