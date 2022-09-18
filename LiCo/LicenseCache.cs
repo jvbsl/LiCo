@@ -29,14 +29,17 @@ namespace LiCo
 
             public override int GetHashCode()
             {
-                return HashCode.Combine(Value, LicenseType);
+                unchecked
+                {
+                    return ((Value != null ? Value.GetHashCode() : 0) * 397) ^ (int)LicenseType;
+                }
             }
         }
         private static Dictionary<LicenseIdentifier, License> _licenses;
         public static Dictionary<LicenseIdentifier, License> Licenses => _licenses ??= new Dictionary<LicenseIdentifier, License>();
-        private static HashSet<License> _licenseSet = new();
+        private static BetterHashSet<License> _licenseSet = new();
 
-        public static bool TryGetValue(LicenseIdentifier key, [MaybeNullWhen(false)] out License license)
+        public static bool TryGetValue(LicenseIdentifier key, out License license)
         {
             return Licenses.TryGetValue(key, out license);
         }

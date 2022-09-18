@@ -62,8 +62,14 @@ namespace LiCo
                     }
 
                     path = Path.GetTempFileName();
-                    var wc = new WebClient();
-                    wc.DownloadFile(packageUri, path);
+                    try
+                    {
+                        var wc = new WebClient();
+                        wc.DownloadFile(packageUri, path);
+                    }
+                    catch (WebException)
+                    {
+                    }
                     break;
                 }
 
@@ -165,8 +171,7 @@ namespace LiCo
         private static (VersionRangeItem from, VersionRangeItem? to) ParseVersionRange(string version)
         {
             version = version.Trim();
-            var splt = version.Split(new char[] { ',' }, 2,
-                StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            var splt = version.TrimmedSplit(new [] { ',' }, 2);
             if (splt.Length == 1)
             {
                 return (new VersionRangeItem(version.ToLower(), true), null);
@@ -221,7 +226,10 @@ namespace LiCo
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Name, Version);
+            unchecked
+            {
+                return ((Name != null ? Name.GetHashCode() : 0) * 397) ^ (Version != null ? Version.GetHashCode() : 0);
+            }
         }
     }
 }

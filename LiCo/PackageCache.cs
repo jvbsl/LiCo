@@ -28,7 +28,10 @@ namespace LiCo
 
             public override int GetHashCode()
             {
-                return HashCode.Combine(Name, Version);
+                unchecked
+                {
+                    return ((Name != null ? Name.GetHashCode() : 0) * 397) ^ (Version != null ? Version.GetHashCode() : 0);
+                }
             }
         }
         private static Dictionary<PackageIdentifier, Package> _packages;

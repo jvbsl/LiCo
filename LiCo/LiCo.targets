@@ -1,22 +1,32 @@
-<Project>
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+    <!-- Add EngeniousContentReference to item type selection in Visual Studio -->
+    <ItemGroup>
+        <AvailableItemName Include="LiCoFilteredPackages" />
+        <AvailableItemName Include="LiCoAdditionalLicenses" />
+        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="SourceItemGroup" />
+    </ItemGroup>
+    <PropertyGroup>
+        <CoreBuildDependsOn>
+            $(CoreBuildDependsOn);CreateThirdPartyNotice;
+        </CoreBuildDependsOn>
+    </PropertyGroup>
     <PropertyGroup>
         <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CreateThirdPartyNotice</TargetsForTfmSpecificBuildOutput>
 
-        <LiCo>$(MSBuildThisFileDirectory)../tools/LiCo.dll</LiCo>
         <LiCoOutput Condition="'$(LiCoOutput)' == ''">ThirdPartyNotice.txt</LiCoOutput>
-        <LiCoTargetToUse Condition="'$(IsPackable)' == 'True'">Pack</LiCoTargetToUse>
-        <LiCoTargetToUse Condition="'$(IsPackable)' != 'True'">BeforeBuild</LiCoTargetToUse>
     </PropertyGroup>
-
-    <Target Name="CreateThirdPartyNotice" BeforeTargets="$(LiCoTargetToUse)">
+    <ItemGroup>
+        <AdditionalFiles Include="$(LiCoOutput)" SourceItemGroup="LiCoOutput" Visible="false"/>
+    </ItemGroup>
+    <Target Name="CreateThirdPartyNotice" AfterTargets="Restore" BeforeTargets="BeforeBuild;PreBuildEvent">
         <ItemGroup>
-            <FilteredPackages Include="@(PackageReference -> HasMetadata('PrivateAssets'))" Condition="'%(PackageReference.PrivateAssets)' != 'all'"/>
-            <FilteredPackages Include="@(PackageReference)" Exclude="@(PackageReference -> HasMetadata('PrivateAssets'))"/>
-        </ItemGroup>
-        <Exec Command="dotnet &quot;$(LiCo)&quot; @(LiCoAdditionalLicenses -> '-m %(Identity)') -o $(LiCoOutput) @(FilteredPackages -> '%(Identity)=%(Version)', ' ')" ContinueOnError="True" Condition="'@(FilteredPackages)' != ''" />
-        <ItemGroup>
-            <TfmSpecificPackageFile Include="$(LiCoOutput)" PackagePath="" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Condition="Exists('$(LiCoOutput)')">
-            </TfmSpecificPackageFile>
+            <LiCoPreFilteredPackages Include="@(PackageReference -> HasMetadata('PrivateAssets'))" Condition="'%(PackageReference.PrivateAssets)' != 'all'"/>
+            <LiCoPreFilteredPackages Include="@(PackageReference)" Exclude="@(PackageReference -> HasMetadata('PrivateAssets'))"/>
+            <LiCoFilteredPackages Include="@(LiCoPreFilteredPackages -> '%(Identity)=%(Version)')"/>
+            <AdditionalFiles Include="@(LiCoFilteredPackages)" SourceItemGroup="LiCoFilteredPackages" Visible="false"/>
+            <AdditionalFiles Include="@(LiCoAdditionalLicenses)" SourceItemGroup="LiCoAdditionalLicenses" Visible="false"/>
         </ItemGroup>
     </Target>
 </Project>

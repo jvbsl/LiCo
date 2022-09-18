@@ -10,32 +10,6 @@ namespace LiCo
 {
     class Program
     {
-        private const int BoxLength = 150;
-        private const int LeftBoxLength = 20;
-        private static void Collect(Package p, Dictionary<License, HashSet<Package>> collectedLicenses,
-            HashSet<Package> alreadyNoticedPackages)
-        {
-            if (alreadyNoticedPackages.Contains(p))
-                return;
-            alreadyNoticedPackages.Add(p);
-            p.LoadPackage();
-            foreach (var l in p.Licenses)
-            {
-                if (!collectedLicenses.TryGetValue(l, out var packages))
-                {
-                    packages = new HashSet<Package>();
-                    collectedLicenses.Add(l, packages);
-                }
-
-                packages.Add(p);
-            }
-
-            foreach (var d in p.Dependencies)
-            {
-                Collect(d, collectedLicenses, alreadyNoticedPackages);
-            }
-        }
-
         static void PrintHelp()
         {
             Console.WriteLine("Usage: LiCo [-o output file] [-m merge file] PACKAGES...");
@@ -86,8 +60,7 @@ namespace LiCo
                     continue;
                 }
                 
-                var splt = packageArg.Split('=');
-                packages.Add(Package.GetPackage(splt[0], splt[1], false));
+                packages.Add(ParsePackageTuple(packageArg));
             }
 
             if (packages.Count == 0 && mergeFiles.Count == 0)
@@ -97,94 +70,15 @@ namespace LiCo
                 return;
             }
 
-            var alreadyNoticedPackages = new HashSet<Package>();
-            var collectedLicenses = new Dictionary<License, HashSet<Package>>();
+            var lico = new LiCo();
 
-            if (File.Exists(output))
-                CollectMergeFile(output, collectedLicenses, alreadyNoticedPackages);
-            
-            CollectMergeFiles(mergeFiles, collectedLicenses, alreadyNoticedPackages);
-
-            foreach(var p in packages)
-            {
-                Collect(p, collectedLicenses, alreadyNoticedPackages);
-            }
-
-
-            using var thirdParty = new FileStream(output, FileMode.Create);
-            using var thirdPartyNotice = new StreamWriter(thirdParty, Encoding.UTF8);
-            WriteThirdPartyNotice(collectedLicenses, thirdPartyNotice);
+            lico.GenerateLicense(output, mergeFiles, packages);
         }
 
-        private static readonly Regex BoxRegex = new Regex($"={{{BoxLength}}}\\s*\n(?<content>.*?)={{{BoxLength}}}", RegexOptions.Compiled | RegexOptions.Singleline);
-
-        private static readonly Regex DepPackageRegex =
-            new Regex("=+ Dependent packages (?<name>\\S*) (?<version>\\S*?) (?<thirdParty>ThirdPartyInfo|) =+\\s*\n", RegexOptions.Compiled);
-        private static void CollectMergeFiles(List<string> mergeFiles, Dictionary<License, HashSet<Package>> collectedLicenses, HashSet<Package> alreadyNoticedPackages)
+        public static Package ParsePackageTuple(string packageTuple)
         {
-            foreach (var f in mergeFiles)
-            {
-                CollectMergeFile(f, collectedLicenses, alreadyNoticedPackages);
-            }
-        }
-
-        private static void CollectMergeFile(string mergeFile, Dictionary<License, HashSet<Package>> collectedLicenses,
-            HashSet<Package> alreadyNoticedPackages)
-        {
-            var fl = File.ReadAllText(mergeFile).Replace("\r", "");
-
-            var matches = BoxRegex.Matches(fl).
-                Select(x => (match: x, packages: DepPackageRegex.Matches(x.Groups["content"].Value).ToArray())).
-                Where(x => x.packages.Length > 0).ToArray();
-
-            for (int i = 0; i < matches.Length; i++)
-            {
-                var (match, pkgs) = matches[i];
-                var start = match.Index + match.Length;
-                int end = i < matches.Length - 1 ? matches[i + 1].match.Index : fl.Length;
-                var license = fl[(start + 2)..(end - 2)];
-                var l = License.GetLicense(pkgs.Length == 1 && pkgs[0].Groups["thirdParty"].Value == "ThirdPartyInfo" ? LicenseType.ThirdPartyFile : LicenseType.File, license);
-                foreach (var p in pkgs)
-                {
-                    var package = Package.GetPackage(p.Groups["name"].Value, p.Groups["version"].Value, false);
-                    // if (alreadyNoticedPackages.Contains(package))
-                    //     continue;
-                    alreadyNoticedPackages.Add(package);
-                    if (!collectedLicenses.TryGetValue(l, out var packagesMatching))
-                    {
-                        packagesMatching = new();
-                        collectedLicenses.Add(l, packagesMatching);
-                    }
-                    
-                    packagesMatching.Add(package);
-                }
-                
-            }
-        }
-
-        private static void WriteThirdPartyNotice(Dictionary<License, HashSet<Package>> collectedLicenses,
-            StreamWriter thirdPartyNotice)
-        {
-            var box = string.Concat(Enumerable.Repeat("=", BoxLength));
-            var leftBox = string.Concat(Enumerable.Repeat("=", LeftBoxLength));
-
-            foreach (var (l, packages) in collectedLicenses)
-            {
-                thirdPartyNotice.WriteLine(box);
-                foreach (var p in packages)
-                {
-                    string part =
-                        $"{leftBox} Dependent packages {p.Name} {p.Version} {(l.LicenseType == LicenseType.ThirdPartyFile ? "ThirdPartyInfo" : "")} "
-                            .PadRight(BoxLength, '=');
-                    thirdPartyNotice.WriteLine(part);
-                }
-
-                thirdPartyNotice.WriteLine(box);
-
-                thirdPartyNotice.WriteLine();
-                thirdPartyNotice.WriteLine(l.LicenseText);
-                thirdPartyNotice.WriteLine();
-            }
+            var splt = packageTuple.Split('=');
+            return Package.GetPackage(splt[0], splt[1], false);
         }
     }
 }

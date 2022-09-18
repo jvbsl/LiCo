@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiCo", "LiCo\LiCo.csproj", "{13A6336A-B6BD-44DB-A603-C36281AEF754}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiCo.Test", "LiCo.Test\LiCo.Test.csproj", "{2E6D7609-265B-4DF8-A764-DE7E826DFD29}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{13A6336A-B6BD-44DB-A603-C36281AEF754}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{13A6336A-B6BD-44DB-A603-C36281AEF754}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{13A6336A-B6BD-44DB-A603-C36281AEF754}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E6D7609-265B-4DF8-A764-DE7E826DFD29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E6D7609-265B-4DF8-A764-DE7E826DFD29}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E6D7609-265B-4DF8-A764-DE7E826DFD29}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E6D7609-265B-4DF8-A764-DE7E826DFD29}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

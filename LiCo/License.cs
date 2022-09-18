@@ -14,6 +14,7 @@ namespace LiCo
         Url,
         Expression
     }
+
     public class License : IEquatable<License>
     {
         public static License GetLicense(LicenseType type, string value)
@@ -30,13 +31,15 @@ namespace LiCo
             {
                 Console.WriteLine($"warning: License not found at: {value}");
             }
+
             return null;
         }
 
         private string DownloadUrlAsText(Uri uri) => DownloadUrlAsText(uri, node => node);
+
         private string DownloadUrlAsText(Uri uri, Func<HtmlNode, HtmlNode> nodeSelector)
         {
-            var wc = (HttpWebRequest) WebRequest.Create(uri);
+            var wc = (HttpWebRequest)WebRequest.Create(uri);
             wc.Accept = "text/plain";
 
             using var resp = wc.GetResponse() as HttpWebResponse;
@@ -87,7 +90,7 @@ namespace LiCo
                     {
                         string tmp = $"{uri.Scheme}://raw.githubusercontent.com";
                         bool foundBlob = false;
-                        for(int i = 0; i < uri.Segments.Length; i++)
+                        for (int i = 0; i < uri.Segments.Length; i++)
                         {
                             var seg = uri.Segments[i];
                             if (!foundBlob && seg == "blob/")
@@ -109,19 +112,22 @@ namespace LiCo
                 case LicenseType.Expression:
                 {
                     var uri = new Uri($"https://spdx.org/licenses/{value}.html");
-                    LicenseText = DownloadUrlAsText(uri, 
+                    LicenseText = DownloadUrlAsText(uri,
                         node =>
                         {
-                            var obj = node.CreateNavigator()?.SelectSingleNode("//*[@property='spdx:licenseText']") as HtmlNodeNavigator;
+                            var obj =
+                                node.CreateNavigator()?.SelectSingleNode("//*[@property='spdx:licenseText']") as
+                                    HtmlNodeNavigator;
                             if (obj != null)
                                 return obj.CurrentNode;
-                            
+
                             return node;
                         });
                     break;
                 }
             }
         }
+
         public LicenseType LicenseType { get; }
         public string LicenseValue { get; }
         public string LicenseText { get; }
@@ -130,7 +136,8 @@ namespace LiCo
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return LicenseType == other.LicenseType && LicenseValue == other.LicenseValue || LicenseText == other.LicenseText;
+            return LicenseType == other.LicenseType && LicenseValue == other.LicenseValue ||
+                   LicenseText == other.LicenseText;
         }
 
         public override bool Equals(object obj)
@@ -138,7 +145,7 @@ namespace LiCo
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((License) obj);
+            return Equals((License)obj);
         }
 
         public override int GetHashCode()
