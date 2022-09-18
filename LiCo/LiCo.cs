@@ -134,9 +134,11 @@ public class LiCo
         for (int i = 0; i < matches.Length; i++)
         {
             var (match, pkgs) = matches[i];
-            var start = match.Index + match.Length;
-            int end = i < matches.Length - 1 ? matches[i + 1].match.Index : mergeFileContent.Length;
-            var license = mergeFileContent[(start + 2)..(end - 2)];
+            var start = match.Index + match.Length + 2;
+            int end = (i < matches.Length - 1 ? matches[i + 1].match.Index : mergeFileContent.Length) - 2;
+            if (start >= end)
+                continue;
+            var license = mergeFileContent[start..end];
             var l = License.GetLicense(
                 pkgs.Length == 1 && pkgs[0].Groups["thirdParty"].Value == "ThirdPartyInfo"
                     ? LicenseType.ThirdPartyFile
